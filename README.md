@@ -114,6 +114,18 @@ set as a `--mirror` for [cpanm][] *before*
 [http://www.cpan.org](http://www.cpan.org) so that you can e.g. ship
 patched versions of official modules.
 
+Last, it is also possible to include a file `gitpanfile` in the main directory
+of the project, with the following format on each line:
+
+    <Name> <Git-URL> [<commit>]
+
+Example:
+
+    Gosh https://github.com/polettix/gosh.git
+
+This allows to install modules that are on GitHub and not released (or not
+updated) on CPAN. The installation will work recursively, i.e. if the target
+project also includes a `gitpanfile` the whole process will be iterated.
 
 [cpanm]: http://cpanmin.us
 [epan]: https://github.com/polettix/epan
