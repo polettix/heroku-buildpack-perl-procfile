@@ -65,11 +65,7 @@ __build_bootstrap_cpanm() {
       | indent
 }
 
-__build_install_dependencies() {
-
-   # this will contain all our local DarkPANs, safely
-   declare -a EPAN
-
+__build_install_dependencies_add_epan_dirs() {
    # sweep possible DarkPAN candidates
    local _d d
    for _d in epan dpan ; do
@@ -85,23 +81,59 @@ __build_install_dependencies() {
       # append "usual" mirrors and use mirrors for index
       EPAN=("${EPAN[@]}" '--mirror' 'http://www.cpan.org' '--mirror-only')
    fi
+}
 
+__build_install_dependencies_cpanm() {
    # now do the actual installation heavylifting
    cpanm 2>&1                 \
       --no-man-pages          \
       $CPANM_OPTS             \
-      $(_get_var "$ENV/BUILDPACK_CPANM_VERBOSE" '--quiet') \
-      $(_get_var "$ENV/BUILDPACK_CPANM_TEST" '--notest')   \
+      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_VERBOSE" '--quiet') \
+      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_TEST" '--notest')   \
       -l "$BUILD_DIR/local"   \
       "${EPAN[@]}"            \
-      --installdeps .         \
+      "$@"                    \
       | indent
+}
+
+# Expects the following variables to be set:
+# BUILD_DIR (to reach "$BUILD_DIR/local")
+# CPANM_OPTS
+# ENV_DIR
+# EPAN
+__build_install_dependencies() {
+   # this will contain all our local DarkPANs, safely across
+   # recursive calls (i.e. it will accumulate ancestors but not
+   # clutter them or siblings
+   declare -a EPAN=("${EPAN[@]}")
+   __build_install_dependencies_add_epan_dirs
+
+   [ -e gitpanfile ] && __build_install_dependencies_gitpanm
+
+   __build_install_dependencies_cpanm --installdeps .
+}
+
+__build_install_dependencies_gitpanm() {
+   mkdir -p "$BUILD_DIR/gitpanm"
+   cat gipanfile | while read name repo ; do
+      # subshell here, yay! Get the code
+      cd "$BUILD_DIR/gitpanm"
+      git clone "$repo" "$name"
+      cd "$name"
+
+      # recurse
+      __build_install_dependencies
+
+      # install the very library
+      cd "$BUILD_DIR/gitpanm"
+      __build_install_dependencies "./$name"
+   done
 }
 
 build() {
    local BUILD_DIR="$1"
    local ENV_DIR="$2"
-   local somevar
+   declare -a EPAN=()
 
    # execute in subshell to avoid change directory side effects
    (
