@@ -170,7 +170,7 @@ __build_install_dependencies_gitpanm() {
 }
 
 __fail_cpanm_log() {
-   cat /app/.cpanm/build.log
+   cat /app/.cpanm/build.log | indent # double indent
    false
 }
 
