@@ -181,7 +181,10 @@ __build_install_dependencies_carton() {
       [ -e local ] || ln -s "$BUILD_DIR/local"
    fi
 
-   "$CARTON" "${PARAMS[@]}"
+   if ! "$CARTON" "${PARAMS[@]}" ; then
+      cat /app/.cpanm/build.log
+      false # fail
+   fi
 }
 
 __build_install_dependencies_cpanm() {
