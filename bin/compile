@@ -181,10 +181,14 @@ __build_install_dependencies_carton() {
       [ -e local ] || ln -s "$BUILD_DIR/local"
    fi
 
-   if ! "$CARTON" "${PARAMS[@]}" ; then
-      cat /app/.cpanm/build.log
-      false # fail
-   fi
+
+   {
+      echo invoking carton
+      if ! "$CARTON" "${PARAMS[@]}" ; then
+         cat /app/.cpanm/build.log 
+         false # fail
+      fi
+   } 2>&1 | indent
 }
 
 __build_install_dependencies_cpanm() {
