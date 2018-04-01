@@ -111,19 +111,21 @@ __build_install_dependencies_add_epan_dirs() {
 }
 
 __build_install_dependencies() {
+   echo 0 $PWD
+
    # this will contain all our local DarkPANs, safely across
    # recursive calls (i.e. it will accumulate ancestors but not
    # clutter them or siblings)
    declare -a EPAN=("${EPAN[@]}")
    __build_install_dependencies_add_epan_dirs
 
-   echo 1
+   echo 1 $PWD
 
    # do stuff from gitpan first, because it's not in the records or
    # has to override stuff in the records
    [ -e gitpanfile ] && __build_install_dependencies_gitpanm
 
-   echo 2
+   echo 2 $PWD
    ls -l .
 
    # proceed with regular stuff
