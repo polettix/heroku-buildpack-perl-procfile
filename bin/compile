@@ -111,22 +111,15 @@ __build_install_dependencies_add_epan_dirs() {
 }
 
 __build_install_dependencies() {
-   echo 0 $PWD
-
    # this will contain all our local DarkPANs, safely across
    # recursive calls (i.e. it will accumulate ancestors but not
    # clutter them or siblings)
    declare -a EPAN=("${EPAN[@]}")
    __build_install_dependencies_add_epan_dirs
 
-   echo 1 $PWD
-
    # do stuff from gitpan first, because it's not in the records or
    # has to override stuff in the records
    [ -e gitpanfile ] && __build_install_dependencies_gitpanm
-
-   echo 2 $PWD
-   ls -l .
 
    # proceed with regular stuff
    if [ -e 'cpanfile.snapshot' ] ; then
@@ -156,7 +149,6 @@ __build_install_dependencies_gitpanm() {
          echo "gitpanfile -> $name $repo $commit"
          [ -d "$name" ] || git clone "$repo" "$name"
          cd "$name"
-         echo changed to "$name" "$PWD"
          git fetch
          if [ -n "$commit" ] ; then
             git checkout "$commit"
@@ -164,7 +156,9 @@ __build_install_dependencies_gitpanm() {
             git pull origin "$(git rev-parse --abbrev-ref HEAD)"
          fi
       } 2>&1 | indent
-      echo before recurse in "$PWD"
+
+      # last indent most probably spoils the cd "$name", redo
+      cd "$GPM_DIR/$name"
 
       # recurse for installing this repo's dependencies
       __build_install_dependencies
@@ -173,6 +167,11 @@ __build_install_dependencies_gitpanm() {
       cd "$GPM_DIR"
       __build_install_dependencies_cpanm "./$name"
    done
+}
+
+__fail_cpanm_log() {
+   cat /app/.cpanm/build.log
+   false
 }
 
 __build_install_dependencies_carton() {
@@ -190,27 +189,24 @@ __build_install_dependencies_carton() {
       [ -e local ] || ln -s "$BUILD_DIR/local"
    fi
 
-
    {
-      echo invoking carton
-      if ! "$CARTON" "${PARAMS[@]}" ; then
-         cat /app/.cpanm/build.log 
-         false # fail
-      fi
+      "$CARTON" "${PARAMS[@]}" || __fail_cpanm_log
    } 2>&1 | indent
 }
 
 __build_install_dependencies_cpanm() {
    # now do the actual installation heavylifting
-   cpanm 2>&1                 \
-      --no-man-pages          \
-      $CPANM_OPTS             \
-      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_VERBOSE" '--quiet') \
-      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_TEST" '--notest')   \
-      -l "$BUILD_DIR/local"   \
-      "${EPAN[@]}"            \
-      "$@"                    \
-      | indent
+   {
+      cpanm                      \
+         --no-man-pages          \
+         $CPANM_OPTS             \
+         $(_get_var "$ENV_DIR/BUILDPACK_CPANM_VERBOSE" '--quiet') \
+         $(_get_var "$ENV_DIR/BUILDPACK_CPANM_TEST" '--notest')   \
+         -l "$BUILD_DIR/local"   \
+         "${EPAN[@]}"            \
+         "$@"                    \
+         || __fail_cpanm_log
+   } 2>&1 | indent
 }
 
 __build_install_cpanm_and_carton() {
