@@ -155,6 +155,8 @@ __build_install_dependencies_gitpanm() {
          else
             git pull origin "$(git rev-parse --abbrev-ref HEAD)"
          fi
+
+         echo "recurring on _build_install_dependencies"
       } 2>&1 | indent
 
       # recurse for installing this repo's dependencies
