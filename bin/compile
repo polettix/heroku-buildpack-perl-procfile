@@ -157,6 +157,9 @@ __build_install_dependencies_gitpanm() {
          fi
       } 2>&1 | indent
 
+      # last indent most probably spoils the cd "$name", redo
+      cd "$GPM_DIR/$name"
+
       # recurse for installing this repo's dependencies
       __build_install_dependencies
 
