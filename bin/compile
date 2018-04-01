@@ -117,9 +117,14 @@ __build_install_dependencies() {
    declare -a EPAN=("${EPAN[@]}")
    __build_install_dependencies_add_epan_dirs
 
+   echo 1
+
    # do stuff from gitpan first, because it's not in the records or
    # has to override stuff in the records
    [ -e gitpanfile ] && __build_install_dependencies_gitpanm
+
+   echo 2
+   ls -l .
 
    # proceed with regular stuff
    if [ -e 'cpanfile.snapshot' ] ; then
@@ -155,8 +160,6 @@ __build_install_dependencies_gitpanm() {
          else
             git pull origin "$(git rev-parse --abbrev-ref HEAD)"
          fi
-
-         echo "recurring on _build_install_dependencies"
       } 2>&1 | indent
 
       # recurse for installing this repo's dependencies
