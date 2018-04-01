@@ -166,6 +166,11 @@ __build_install_dependencies_gitpanm() {
    done
 }
 
+__fail_cpanm_log() {
+   cat /app/.cpanm/build.log | sed 's/^/cpanm build.log> /'
+   false
+}
+
 __build_install_dependencies_carton() {
    local CARTON=carton
    local PRIVATE_CARTON='vendor/bin/carton'
@@ -181,20 +186,24 @@ __build_install_dependencies_carton() {
       [ -e local ] || ln -s "$BUILD_DIR/local"
    fi
 
-   "$CARTON" "${PARAMS[@]}"
+   {
+      "$CARTON" "${PARAMS[@]}" || __fail_cpanm_log
+   } 2>&1 | indent
 }
 
 __build_install_dependencies_cpanm() {
    # now do the actual installation heavylifting
-   cpanm 2>&1                 \
-      --no-man-pages          \
-      $CPANM_OPTS             \
-      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_VERBOSE" '--quiet') \
-      $(_get_var "$ENV_DIR/BUILDPACK_CPANM_TEST" '--notest')   \
-      -l "$BUILD_DIR/local"   \
-      "${EPAN[@]}"            \
-      "$@"                    \
-      | indent
+   {
+      cpanm                      \
+         --no-man-pages          \
+         $CPANM_OPTS             \
+         $(_get_var "$ENV_DIR/BUILDPACK_CPANM_VERBOSE" '--quiet') \
+         $(_get_var "$ENV_DIR/BUILDPACK_CPANM_TEST" '--notest')   \
+         -l "$BUILD_DIR/local"   \
+         "${EPAN[@]}"            \
+         "$@"                    \
+         || __fail_cpanm_log
+   } 2>&1 | indent
 }
 
 __build_install_cpanm_and_carton() {
