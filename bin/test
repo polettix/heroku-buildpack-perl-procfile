@@ -1,0 +1,17 @@
+#!/bin/sh
+
+BUILD_DIR="$1"
+ENV_DIR="$2"
+
+set -eo pipefail
+
+cd "$BUILD_DIR"
+if [[ -d t ]] ; then
+   prove -vI lib t
+else
+   cat - <<'END'
+1..1
+ok 1 - no tests set, assume dev is happy anyway
+END
+   true
+fi
