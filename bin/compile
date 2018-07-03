@@ -32,7 +32,7 @@ main() {
    # prepare files with environment for run stage
    prepare_run_environment "$BUILD_DIR"
 
-   [[ -n "BUILDPACK_SAVE_ENV" ]] \
+   [[ -n "$BUILDPACK_SAVE_ENV" ]] \
       && save_build_environment "$BUILD_DIR" "$ENV_DIR" "$BUILDPACK_SAVE_ENV"
 
    return 0
