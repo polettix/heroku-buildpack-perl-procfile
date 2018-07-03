@@ -193,6 +193,24 @@ commit is optionally checked out, and the installation is performed
 recursively.
 
 
+Environment Variables
+---------------------
+
+The following environment variables allow customizing the behaviour of this
+buildpack:
+
+- `BUILDPACK_CPANM_OPTS`: set options for [cpanm][]
+- `BUILDPACK_CPANM_VERBOSE`: passed to [cpanm][], defaults to `--quiet`
+- `BUILDPACK_CPANM_TEST`: passed to [cpanm][], defaults to `--notest`
+- `BUILDPACK_SAVE_ENV`: when set to a non-empty value, save enviroment. If
+  the value of this variable starts by `/`, save under
+  `$BUILD_DIR$BUILDPACK_SAVE_ENV` (where `$BUILD_DIR` becomes `/app` in the
+  generated container image), otherwise `$BUILD_DIR/.build_env` is used
+- `BUILDPACK_VERBOSE`: when set to any non-empty value, print out details
+  about the build invocation
+
+
+
 [cpanm]: http://cpanmin.us
 [carton]: https://metacpan.org/release/Carton
 [epan]: https://github.com/polettix/epan
