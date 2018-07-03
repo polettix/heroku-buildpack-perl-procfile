@@ -43,7 +43,10 @@ main() {
 
 post_build() {
    local POST="$1/.post-build"
-   [[ -f "$POST" ]] && [[ -x "$POST" ]] && "$POST" "$@"
+   if [[ -f "$POST" ]] && [[ -x "$POST" ]] ; then
+      echo "-----> Executing post-build operation"
+      "$POST" "$@"
+   fi
 }
 
 build() {
@@ -53,7 +56,7 @@ build() {
    # execute in subshell to avoid change directory side effects
    (
       local CPANM_OPTS="${CPANM_OPTS:-"$PERL_CPANM_OPTS"}"
-      [[ -n "$BUILDPACK_CPANM_OPTS" ]] && CPANM_OPTS="$BUILDPACK_CPANM_OPTS"
+      [[ -z "$BUILDPACK_CPANM_OPTS" ]] || CPANM_OPTS="$BUILDPACK_CPANM_OPTS"
       cd "$BUILD_DIR"
       mkdir -p 'local'
 
@@ -80,9 +83,10 @@ export PATH="$HOME/bin:$HOME/local/bin:$HOME/local/perl/bin:$PATH"
 export PERL5LIB="$HOME/local/lib/perl5:$PERL5LIB"
 END
 
-   [[ -n "$BUILDPACK_SET_VERSION" ]] \
-      && printf 'VERSION=%q\n' "$BUILDPACK_SET_VERSION" \
+   if [[ -n "$BUILDPACK_SET_VERSION" ]] ; then
+      printf 'VERSION=%q\n' "$BUILDPACK_SET_VERSION" \
          >"$PROFILE_DIR/20.version-env.sh"
+   fi
 }
 
 save_build_environment() {
