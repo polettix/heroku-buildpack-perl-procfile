@@ -44,7 +44,7 @@ build() {
 
    # execute in subshell to avoid change directory side effects
    (
-      local CPANM_OPTS="$(_get_var PERL_CPANM_OPTS "$CPANM_OPTS")"
+      local CPANM_OPTS="${CPANM_OPTS:-"$PERL_CPANM_OPTS"}"
       [[ -n "$BUILDPACK_CPANM_OPTS" ]] && CPANM_OPTS="$BUILDPACK_CPANM_OPTS"
       cd "$BUILD_DIR"
       mkdir -p 'local'
@@ -96,16 +96,6 @@ __main_print_buildpack_details() {
       echo "ENV_DIR   [$ENV_DIR]"
       ls -l "$ENV_DIR"
    } | indent
-}
-
-_get_var() {
-   local VARFILE="$ENV_DIR/$1"
-   local DEFAULT="$2"
-   if [[ -e "$VARFILE" ]] ; then
-      cat "$VARFILE"
-   else
-      echo "$DEFAULT"
-   fi
 }
 
 __build_install_dependencies_add_epan_dirs() {
@@ -216,8 +206,8 @@ __build_install_dependencies_cpanm() {
       cpanm                      \
          --no-man-pages          \
          $CPANM_OPTS             \
-         $(_get_var BUILDPACK_CPANM_VERBOSE '--quiet') \
-         $(_get_var BUILDPACK_CPANM_TEST    '--notest')   \
+         ${BUILDPACK_CPANM_VERBOSE:-'--quiet'} \
+         ${BUILDPACK_CPANM_TEST:-'--notest'} \
          -l "$BUILD_DIR/local"   \
          "${EPAN[@]}"            \
          "$@"                    \
