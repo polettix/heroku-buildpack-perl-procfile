@@ -86,7 +86,7 @@ export PERL5LIB="$HOME/local/lib/perl5:$PERL5LIB"
 END
 
    if [[ -n "$BUILDPACK_SET_VERSION" ]] ; then
-      printf 'VERSION=%q\n' "$BUILDPACK_SET_VERSION" \
+      printf 'export VERSION=%q\n' "$BUILDPACK_SET_VERSION" \
          >"$PROFILE_DIR/20.version-env.sh"
    fi
 }
