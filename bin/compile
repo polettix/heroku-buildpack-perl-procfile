@@ -78,9 +78,9 @@ save_build_environment() {
    [[ "${TARGET:0:1}" != '/' ]] && TARGET='/.build_env'
    TARGET="$BUILD_DIR$TARGET"
    mkdir -p "$TARGET/ENV_DIR"
-   cp -a "$ENV_DIR"/* "$TARGET/ENV_DIR"
-   env > "$TARGET/env"
-   set > "$TARGET/set"
+   cp -a "$ENV_DIR" "$TARGET"
+   env > "$TARGET/env.sh"
+   set > "$TARGET/set.sh"
 }
 
 __main_print_buildpack_details() {
