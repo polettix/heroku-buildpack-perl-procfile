@@ -45,6 +45,7 @@ build() {
    # execute in subshell to avoid change directory side effects
    (
       local CPANM_OPTS="$(_get_var PERL_CPANM_OPTS "$CPANM_OPTS")"
+      [[ -n "$BUILDPACK_CPANM_OPTS" ]] && CPANM_OPTS="$BUILDPACK_CPANM_OPTS"
       cd "$BUILD_DIR"
       mkdir -p 'local'
 
