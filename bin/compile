@@ -32,6 +32,9 @@ main() {
    # prepare files with environment for run stage
    prepare_run_environment "$BUILD_DIR"
 
+   [[ -n "BUILDPACK_SAVE_ENV" ]] \
+      && save_build_environment "$BUILD_DIR" "$ENV_DIR" "$BUILDPACK_SAVE_ENV"
+
    return 0
 }
 
@@ -66,6 +69,18 @@ prepare_run_environment() {
 export PATH="$HOME/bin:$HOME/local/bin:$HOME/local/perl/bin:$PATH"
 export PERL5LIB="$HOME/local/lib/perl5:$PERL5LIB"
 END
+}
+
+save_build_environment() {
+   local BUILD_DIR="$1"
+   local ENV_DIR="$2"
+   local TARGET="$3"
+   [[ "${TARGET:0:1}" != '/' ]] && TARGET='/.build_env'
+   TARGET="$BUILD_DIR$TARGET"
+   mkdir -p "$TARGET"
+   cp -a "$ENV_DIR" "$TARGET"
+   env > "$TARGET/env"
+   set > "$TARGET/set"
 }
 
 __main_print_buildpack_details() {
