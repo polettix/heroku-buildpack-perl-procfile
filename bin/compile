@@ -77,7 +77,7 @@ save_build_environment() {
    local TARGET="$3"
    [[ "${TARGET:0:1}" != '/' ]] && TARGET='/.build_env'
    TARGET="$BUILD_DIR$TARGET"
-   mkdir -p "$TARGET/ENV_DIR"
+   mkdir -p "$TARGET"
    cp -a "$ENV_DIR" "$TARGET"
    env > "$TARGET/env.sh"
    set > "$TARGET/set.sh"
