@@ -88,6 +88,12 @@ repo, you can use the suggestions provided in [custom buildpacks][]:
     $ ssh dokku@your-node.example.com config:set your-app \
         BUILDPACK_URL=https://github.com/polettix/heroku-buildpack-perl-procfile.git
 
+The buildpack also supports a `.post-build` executable, that is run around the end
+of the execution. You can e.g. use it to grab additional environment variables and
+do last-minute operations. The program is invoked like this:
+
+    $ $BUILD_DIR/.post-build "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
+
 
 Custom Perl
 -----------
@@ -208,7 +214,10 @@ buildpack:
   generated container image), otherwise `$BUILD_DIR/.build_env` is used
 - `BUILDPACK_VERBOSE`: when set to any non-empty value, print out details
   about the build invocation
-
+- `BUILDPACK_SET_VERSION`: when set to any non-empty value, the value is
+  saved in `$BUILD_DIR/20.version-env.sh` so that it is sourced when
+  running the application and make the `VERSION` environment variable
+  available.
 
 
 [cpanm]: http://cpanmin.us

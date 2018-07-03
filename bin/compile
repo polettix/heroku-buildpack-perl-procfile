@@ -32,10 +32,18 @@ main() {
    # prepare files with environment for run stage
    prepare_run_environment "$BUILD_DIR"
 
+   # if present, execute post-build stuff
+   post_build "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
+
    [[ -n "$BUILDPACK_SAVE_ENV" ]] \
       && save_build_environment "$BUILD_DIR" "$ENV_DIR" "$BUILDPACK_SAVE_ENV"
 
    return 0
+}
+
+post_build() {
+   local POST="$1/.post-build"
+   [[ -f "$POST" -a -x "$POST" ]] && "$POST" "$@"
 }
 
 build() {
@@ -62,14 +70,19 @@ build() {
 
 prepare_run_environment() {
    local BUILD_DIR="$1"
+   local PROFILE_DIR="$BUILD_DIR/.profile.d"
 
    # $HOME/local/perl/bin is always added, it might be missing but
    # no harm done
-   mkdir -p "$BUILD_DIR/.profile.d"
-   cat > "$BUILD_DIR/.profile.d/perl-env.sh" <<'END'
+   mkdir -p "$PROFILE_DIR"
+   cat >"$PROFILE_DIR/10.perl-env.sh" <<'END'
 export PATH="$HOME/bin:$HOME/local/bin:$HOME/local/perl/bin:$PATH"
 export PERL5LIB="$HOME/local/lib/perl5:$PERL5LIB"
 END
+
+   [[ -n "$BUILDPACK_SET_VERSION" ]] \
+      && printf 'VERSION=%q\n' "$BUILDPACK_SET_VERSION" \
+         >"$PROFILE_DIR/20.version-env.sh"
 }
 
 save_build_environment() {
