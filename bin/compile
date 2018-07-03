@@ -43,7 +43,7 @@ main() {
 
 post_build() {
    local POST="$1/.post-build"
-   [[ -f "$POST" -a -x "$POST" ]] && "$POST" "$@"
+   [[ -f "$POST" ]] && [[ -x "$POST" ]] && "$POST" "$@"
 }
 
 build() {
