@@ -12,7 +12,7 @@ main() {
    local CACHE_DIR="$(ensure_dir "$2")"
    local ENV_DIR="$(ensure_dir "$3")"
 
-   [ -n "$BUILDPACK_VERBOSE" ] && __main_print_buildpack_details
+   [[ -n "$BUILDPACK_VERBOSE" ]] && __main_print_buildpack_details
 
    # use "new stuff" as much as possible. The custom "perl" will be wiped
    # out if return to system perl is requested, so no harm in including
@@ -27,7 +27,7 @@ main() {
    build "$BUILD_DIR" "$ENV_DIR"
 
    # save compilation in cache for future reuse
-   [ -d "$BUILD_DIR/local" ] && copy_local "$BUILD_DIR" "$CACHE_DIR"
+   [[ -d "$BUILD_DIR/local" ]] && copy_local "$BUILD_DIR" "$CACHE_DIR"
 
    # prepare files with environment for run stage
    prepare_run_environment "$BUILD_DIR"
@@ -85,7 +85,7 @@ __main_print_buildpack_details() {
 _get_var() {
    local VARFILE="$ENV_DIR/$1"
    local DEFAULT="$2"
-   if [ -e "$VARFILE" ] ; then
+   if [[ -e "$VARFILE" ]] ; then
       cat "$VARFILE"
    else
       echo "$DEFAULT"
@@ -97,14 +97,14 @@ __build_install_dependencies_add_epan_dirs() {
    local _d d
    for _d in epan dpan ; do
       d="$PWD/$_d"
-      [ -d "$d" ] || continue
+      [[ -d "$d" ]] || continue
       EPAN=("${EPAN[@]}" '--mirror' "file://$d")
    done
 
    # if something was actually found, insist on using mirrors only
    # and make sure www.cpan.org is present but at the end, so that it
    # can be overridden
-   if [ "${#EPAN[@]}" -gt 0 ] ; then
+   if [[ "${#EPAN[@]}" -gt 0 ]] ; then
       # append "usual" mirrors and use mirrors for index
       EPAN=("${EPAN[@]}" '--mirror' 'http://www.cpan.org' '--mirror-only')
    fi
@@ -119,10 +119,10 @@ __build_install_dependencies() {
 
    # do stuff from gitpan first, because it's not in the records or
    # has to override stuff in the records
-   [ -e gitpanfile ] && __build_install_dependencies_gitpanm
+   [[ -e gitpanfile ]] && __build_install_dependencies_gitpanm
 
    # proceed with regular stuff
-   if [ -e 'cpanfile.snapshot' ] ; then
+   if [[ -e 'cpanfile.snapshot' ]] ; then
       __build_install_dependencies_carton
    else
       # use cpanm, possibly taking array EPAN in consideration
@@ -147,10 +147,10 @@ __build_install_dependencies_gitpanm() {
 
       { # grouping, for redirection to indent
          echo "gitpanfile -> $name $repo $commit"
-         [ -d "$name" ] || git clone "$repo" "$name"
+         [[ -d "$name" ]] || git clone "$repo" "$name"
          cd "$name"
          git fetch
-         if [ -n "$commit" ] ; then
+         if [[ -n "$commit" ]] ; then
             git checkout "$commit"
          else
             git pull origin "$(git rev-parse --abbrev-ref HEAD)"
@@ -177,16 +177,16 @@ __fail_cpanm_log() {
 __build_install_dependencies_carton() {
    local CARTON=carton
    local PRIVATE_CARTON='vendor/bin/carton'
-   [ -x "$PRIVATE_CARTON" ] && CARTON="$PRIVATE_CARTON"
+   [[ -x "$PRIVATE_CARTON" ]] && CARTON="$PRIVATE_CARTON"
 
    declare -a PARAMS=('install' '--deployment')
-   [ -d 'vendor/cache' ] && PARAMS=("${PARAMS[@]}" '--cached')
+   [[ -d 'vendor/cache' ]] && PARAMS=("${PARAMS[@]}" '--cached')
 
    # if we're recurring, chances are that carton will try to install
    # stuff in the wrong place, so we have to attempt something
-   if [ "$(readlink -f "$BUILD_DIR")" != "$(readlink -f '.')" ] ; then
+   if [[ "$(readlink -f "$BUILD_DIR")" != "$(readlink -f '.')" ]] ; then
       # try to make "local" point to the *right* local, or cross fingers
-      [ -e local ] || ln -s "$BUILD_DIR/local"
+      [[ -e local ]] || ln -s "$BUILD_DIR/local"
    fi
 
    {
@@ -210,7 +210,7 @@ __build_install_dependencies_cpanm() {
 }
 
 __build_install_cpanm_and_carton() {
-   if [ ! -e "$BUILD_DIR/local/bin/cpanm" ] ; then
+   if [[ ! -e "$BUILD_DIR/local/bin/cpanm" ]] ; then
       curl -L --silent "$CPANM"        \
          | perl - App::cpanminus 2>&1  \
             --quiet                    \
@@ -222,7 +222,7 @@ __build_install_cpanm_and_carton() {
       perl_script_relocate "$BUILD_DIR/local/bin/cpanm" | indent
    fi
 
-   if [ ! -e "$BUILD_DIR/local/bin/carton" ] ; then
+   if [[ ! -e "$BUILD_DIR/local/bin/carton" ]] ; then
       __build_install_dependencies_cpanm Carton
       perl_script_relocate "$BUILD_DIR/local/bin/carton" | indent
    fi
@@ -237,8 +237,8 @@ __build_install_perl() {
    local FLAG_FILE="$BUILD_DIR/.perl-archive"
 
    # revert to system perl if no custom one is requested
-   if [ ! -r "$FLAG_FILE" ] ; then
-      [ -d "$BUILD_DIR/local/perl" ] && __build_install_perl_restore_system_perl | indent
+   if [[ ! -r "$FLAG_FILE" ]] ; then
+      [[ -d "$BUILD_DIR/local/perl" ]] && __build_install_perl_restore_system_perl | indent
       return 0
    fi
 
@@ -274,7 +274,7 @@ copy_local() {
    local SOURCE_DIR="$1"
    local DESTINATION_DIR="$2"
    rm -rf "$DESTINATION_DIR/local"
-   if [ -d "$SOURCE_DIR/local" ]; then
+   if [[ -d "$SOURCE_DIR/local" ]] ; then
       cp -a "$SOURCE_DIR/local" "$DESTINATION_DIR"
    fi
 
