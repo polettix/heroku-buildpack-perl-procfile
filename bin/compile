@@ -35,9 +35,11 @@ main() {
    # if present, execute post-build stuff
    post_build "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
 
-   [[ -n "$BUILDPACK_SAVE_ENV" ]] \
-      && save_build_environment "$BUILD_DIR" "$ENV_DIR" "$BUILDPACK_SAVE_ENV"
+   if [[ -n "$BUILDPACK_SAVE_ENV" ]] ; then
+      save_build_environment "$BUILD_DIR" "$ENV_DIR" "$BUILDPACK_SAVE_ENV"
+   fi
 
+   echo "-----> Compile complete"
    return 0
 }
 
